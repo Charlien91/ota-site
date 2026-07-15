@@ -1,0 +1,4 @@
+Contact: mailto:security@overtimeanalytix.com
+Expires: 2027-07-15T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://overtimeanalytix.com/.well-known/security.txt
