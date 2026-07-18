@@ -8,91 +8,91 @@
     <loc>https://overtimeanalytix.com/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-    <lastmod>2026-07-15</lastmod>
+    <lastmod>2026-07-18</lastmod>
   </url>
 
   <url>
     <loc>https://overtimeanalytix.com/swingiq</loc>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
-    <lastmod>2026-07-15</lastmod>
+    <lastmod>2026-07-18</lastmod>
   </url>
 
   <url>
     <loc>https://overtimeanalytix.com/grip-trainer</loc>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
-    <lastmod>2026-07-15</lastmod>
+    <lastmod>2026-07-18</lastmod>
   </url>
 
   <url>
     <loc>https://overtimeanalytix.com/products</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-    <lastmod>2026-07-15</lastmod>
+    <lastmod>2026-07-18</lastmod>
   </url>
 
   <url>
     <loc>https://overtimeanalytix.com/services</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-    <lastmod>2026-07-15</lastmod>
+    <lastmod>2026-07-18</lastmod>
   </url>
 
   <url>
     <loc>https://overtimeanalytix.com/picks</loc>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
-    <lastmod>2026-07-15</lastmod>
+    <lastmod>2026-07-18</lastmod>
   </url>
 
   <url>
     <loc>https://overtimeanalytix.com/nba-picks</loc>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
-    <lastmod>2026-07-15</lastmod>
+    <lastmod>2026-07-18</lastmod>
   </url>
 
   <url>
     <loc>https://overtimeanalytix.com/nhl-picks</loc>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
-    <lastmod>2026-07-15</lastmod>
+    <lastmod>2026-07-18</lastmod>
   </url>
 
   <url>
     <loc>https://overtimeanalytix.com/ufc-picks</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-    <lastmod>2026-07-15</lastmod>
+    <lastmod>2026-07-18</lastmod>
   </url>
 
   <url>
     <loc>https://overtimeanalytix.com/analysis</loc>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
-    <lastmod>2026-07-15</lastmod>
+    <lastmod>2026-07-18</lastmod>
   </url>
 
   <url>
     <loc>https://overtimeanalytix.com/trends</loc>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
-    <lastmod>2026-07-15</lastmod>
+    <lastmod>2026-07-18</lastmod>
   </url>
 
   <url>
     <loc>https://overtimeanalytix.com/about</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
-    <lastmod>2026-07-15</lastmod>
+    <lastmod>2026-07-18</lastmod>
   </url>
 
   <url>
     <loc>https://overtimeanalytix.com/contact</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
-    <lastmod>2026-07-15</lastmod>
+    <lastmod>2026-07-18</lastmod>
   </url>
 
   <url>
@@ -104,5 +104,40 @@
     <loc>https://overtimeanalytix.com/football</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://overtimeanalytix.com/blog</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-07-18</lastmod>
+  </url>
+
+  <url>
+    <loc>https://overtimeanalytix.com/blog/airless-football</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <lastmod>2026-07-18</lastmod>
+  </url>
+
+  <url>
+    <loc>https://overtimeanalytix.com/blog/how-to-fix-a-golf-slice</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-07-18</lastmod>
+  </url>
+
+  <url>
+    <loc>https://overtimeanalytix.com/blog/proper-golf-grip-guide</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+    <lastmod>2026-07-18</lastmod>
+  </url>
+
+  <url>
+    <loc>https://overtimeanalytix.com/blog/best-golf-training-aids</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+    <lastmod>2026-07-18</lastmod>
   </url>
 </urlset>
