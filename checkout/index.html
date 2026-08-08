@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Checkout — Overtime Analytix</title>
+<!--
+  Checkout router for Meta Commerce Manager.
+
+  Meta does not link straight to a payment page: it appends the catalog item to
+  a URL template, e.g.
+
+      /checkout?products=OTX-001:1&coupon=SAVE10
+
+  and expects the site to put THAT item in front of the buyer. A raw Square
+  payment link cannot do that - it is one fixed product - so every buyer would
+  land on the same checkout regardless of what they clicked. This page reads the
+  product id and forwards to the matching Square checkout.
+
+  Written as a plain static file rather than an app route on purpose: no
+  framework to boot, so the redirect fires immediately and Meta's periodic
+  automated review is not waiting on a JS bundle. If script is blocked entirely,
+  the buttons below are real links and still complete the sale.
+-->
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #000; color: #fff; min-height: 100vh;
+    display: flex; align-items: center; justify-content: center; padding: 24px;
+    font-family: "Nunito", -apple-system, "Segoe UI", system-ui, sans-serif;
+    text-align: center;
+  }
+  .wrap { max-width: 460px; width: 100%; }
+  h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
+  p  { margin-top: 12px; color: rgba(255,255,255,.55); font-size: 15px; line-height: 1.6; }
+  .spin {
+    width: 34px; height: 34px; margin: 0 auto 26px;
+    border: 3px solid rgba(255,255,255,.15); border-top-color: #34d399;
+    border-radius: 50%; animation: sp .8s linear infinite;
+  }
+  @keyframes sp { to { transform: rotate(360deg); } }
+  .opts { margin-top: 30px; display: flex; flex-direction: column; gap: 10px; }
+  a.btn {
+    display: block; padding: 15px 20px; border-radius: 12px;
+    background: #34d399; color: #04120c; font-weight: 800; font-size: 16px;
+    text-decoration: none;
+  }
+  a.btn.alt { background: transparent; border: 1px solid rgba(255,255,255,.18); color: #fff; }
+  .foot { margin-top: 26px; font-size: 13px; color: rgba(255,255,255,.35); }
+  .foot a { color: rgba(255,255,255,.6); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="spin" id="spin"></div>
+    <h1 id="head">Taking you to checkout…</h1>
+    <p id="sub">Secure payment is handled by Square.</p>
+
+    <!-- Real links, always in the HTML: they are the no-JS path AND what an
+         automated reviewer sees if it does not execute script. -->
+    <div class="opts" id="opts" hidden>
+      <a class="btn" href="https://square.link/u/kK3Ed9nH">OTX Smartwatch — $75</a>
+      <a class="btn alt" href="https://square.link/u/T75PfvMi">OTX Football — $100</a>
+      <a class="btn alt" href="https://square.link/u/s804ij6C">Golf Grip Trainer</a>
+    </div>
+
+    <p class="foot">
+      Trouble checking out? <a href="https://overtimeanalytix.com/contact">Contact us</a>
+    </p>
+  </div>
+
+<script>
+(function () {
+  // catalog retailer_id -> Square hosted checkout
+  var LINKS = {
+    "OTX-001":    "https://square.link/u/kK3Ed9nH",   // OTX smartwatch, $75
+    "OTX-V1":     "https://square.link/u/kK3Ed9nH",   // mpn, in case the feed uses it
+    "GRIP-001":   "https://square.link/u/s804ij6C",   // golf grip trainer
+    "OTX-GRIP-V1":"https://square.link/u/s804ij6C",
+    "OTX-FB-001": "https://square.link/u/T75PfvMi",   // OTX Football, $100
+    "OTX-FB-V1":  "https://square.link/u/T75PfvMi"
+  };
+  var DEFAULT = "https://square.link/u/kK3Ed9nH";
+
+  function param(name) {
+    var m = new RegExp("[?&]" + name + "=([^&]*)").exec(window.location.search);
+    return m ? decodeURIComponent(m[1].replace(/\+/g, " ")) : "";
+  }
+
+  // Meta sends "id:quantity" and may comma-separate multiple items. Only the
+  // first is used: Square payment links are one product each.
+  var raw = param("products") || param("product") || param("id");
+  var id  = raw.split(",")[0].split(":")[0].trim();
+
+  var dest = null;
+  if (id) {
+    var keys = Object.keys(LINKS);
+    for (var i = 0; i < keys.length; i++) {
+      if (keys[i].toLowerCase() === id.toLowerCase()) { dest = LINKS[keys[i]]; break; }
+    }
+    if (!dest) {
+      // Tolerate prefixed/suffixed feed ids, LONGEST key first: "OTX-FB-001"
+      // must not be matched by the shorter "OTX-001" and bill football at the
+      // watch price. Charging the wrong amount is the one failure that cannot
+      // be walked back, so specificity wins.
+      var byLen = keys.slice().sort(function (a, b) { return b.length - a.length; });
+      for (var j = 0; j < byLen.length; j++) {
+        if (id.toLowerCase().indexOf(byLen[j].toLowerCase()) !== -1) { dest = LINKS[byLen[j]]; break; }
+      }
+    }
+  }
+
+  // A known product, or no product at all (someone hitting /checkout bare, or
+  // Meta probing the template) both go to the single live checkout. Only an
+  // id we recognise as NOT purchasable stops and asks.
+  if (!dest && !id) dest = DEFAULT;
+
+  if (dest) {
+    // replace() so the back button returns to the shop, not this redirector
+    window.location.replace(dest);
+  } else {
+    document.getElementById("spin").hidden = true;
+    document.getElementById("head").textContent = "Choose your product";
+    document.getElementById("sub").textContent =
+      "That item is not available for purchase yet. These are ready to ship:";
+    document.getElementById("opts").hidden = false;
+  }
+})();
+</script>
+</body>
+</html>
