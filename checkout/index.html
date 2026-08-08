@@ -5,131 +5,270 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>Checkout — Overtime Analytix</title>
+<meta name="description" content="Buy the OTX smartwatch with SwingIQ, the OTX Football, or the Golf Grip Trainer. No subscription, ever.">
 <!--
-  Checkout router for Meta Commerce Manager.
+  Checkout router AND landing page for Meta Commerce.
 
-  Meta does not link straight to a payment page: it appends the catalog item to
-  a URL template, e.g.
+  Two jobs at once, which is why it is one static file:
 
-      /checkout?products=OTX-001:1&coupon=SAVE10
+  1) ROUTER. Meta appends the catalog item to a template -
+     /checkout?products=OTX-001:1&coupon=X - and expects the site to put THAT
+     item in front of the buyer. A raw Square link cannot: it is one fixed
+     product, so every buyer would land on the same checkout. When a known id
+     arrives this forwards straight to the matching Square checkout - somebody
+     who already chose should not be made to choose again.
 
-  and expects the site to put THAT item in front of the buyer. A raw Square
-  payment link cannot do that - it is one fixed product - so every buyer would
-  land on the same checkout regardless of what they clicked. This page reads the
-  product id and forwards to the matching Square checkout.
+  2) LANDING PAGE. When no id arrives - which is what the Instagram link does -
+     this is what a warm, undecided buyer sees. So it has to actually sell:
+     what it is, what it does, what it costs, and why there is no catch.
 
-  Written as a plain static file rather than an app route on purpose: no
-  framework to boot, so the redirect fires immediately and Meta's periodic
-  automated review is not waiting on a JS bundle. If script is blocked entirely,
-  the buttons below are real links and still complete the sale.
+  Static on purpose: no framework to boot, so the redirect is instant and
+  Meta's periodic automated review is not waiting on a JS bundle. Every Square
+  link is a real <a> in the HTML, so a crawler that does not run script still
+  finds a working checkout.
 -->
 <style>
   :root { color-scheme: dark; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    background: #000; color: #fff; min-height: 100vh;
-    display: flex; align-items: center; justify-content: center; padding: 24px;
-    font-family: "Nunito", -apple-system, "Segoe UI", system-ui, sans-serif;
-    text-align: center;
+    background: #000; color: #fff; min-height: 100vh; padding: 0 20px 64px;
+    font-family: "Nunito", "SF Pro Rounded", -apple-system, "Segoe UI", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    background-image:
+      radial-gradient(58% 42% at 50% 0%, rgba(52,211,153,.11), transparent 68%),
+      radial-gradient(46% 34% at 88% 46%, rgba(104,122,255,.07), transparent 70%);
   }
-  .wrap { max-width: 460px; width: 100%; }
-  h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
-  p  { margin-top: 12px; color: rgba(255,255,255,.55); font-size: 15px; line-height: 1.6; }
-  .spin {
-    width: 34px; height: 34px; margin: 0 auto 26px;
-    border: 3px solid rgba(255,255,255,.15); border-top-color: #34d399;
+  .wrap { max-width: 940px; margin: 0 auto; }
+
+  header { text-align: center; padding: 54px 0 0; }
+  .brand {
+    font-size: 12px; font-weight: 800; letter-spacing: .3em;
+    color: rgba(255,255,255,.42); text-transform: uppercase;
+  }
+  h1 {
+    margin-top: 18px; font-size: clamp(30px, 6vw, 47px); font-weight: 800;
+    letter-spacing: -.03em; line-height: 1.06;
+  }
+  .sub {
+    margin: 16px auto 0; max-width: 470px; font-size: 16px; line-height: 1.62;
+    color: rgba(255,255,255,.55);
+  }
+
+  .cards { margin-top: 42px; display: grid; gap: 16px; grid-template-columns: 1fr; }
+  @media (min-width: 760px) { .cards { grid-template-columns: 1fr 1fr; } }
+
+  .card {
+    position: relative; display: flex; flex-direction: column;
+    border: 1px solid rgba(255,255,255,.10); border-radius: 22px;
+    background: rgba(255,255,255,.022); padding: 26px 24px 24px; overflow: hidden;
+  }
+  .card::before {
+    content: ""; position: absolute; left: 24px; right: 24px; top: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(52,211,153,.5), transparent);
+  }
+  .card.feature { grid-column: 1 / -1; }
+  @media (min-width: 760px) {
+    .card.feature { flex-direction: row; align-items: center; gap: 34px; padding: 30px 34px; }
+    .card.feature .shot { flex: 0 0 210px; }
+    .card.feature .body { flex: 1; }
+  }
+
+  .tag {
+    display: inline-block; font-size: 10px; font-weight: 800; letter-spacing: .18em;
+    text-transform: uppercase; color: #34d399;
+    border: 1px solid rgba(52,211,153,.34); background: rgba(52,211,153,.09);
+    border-radius: 999px; padding: 5px 11px; margin-bottom: 14px;
+  }
+  .shot { text-align: center; }
+  .shot img { width: 100%; max-width: 176px; height: auto; display: inline-block;
+              filter: drop-shadow(0 20px 34px rgba(0,0,0,.75)); }
+  .card.feature .shot img { max-width: 200px; }
+
+  h2 { font-size: 25px; font-weight: 800; letter-spacing: -.02em; margin-top: 4px; }
+  .card.feature h2 { font-size: 31px; }
+  .blurb { margin-top: 9px; font-size: 14.5px; line-height: 1.6; color: rgba(255,255,255,.56); }
+
+  ul { list-style: none; margin-top: 16px; display: grid; gap: 8px; }
+  li { display: flex; gap: 10px; font-size: 14.5px; color: rgba(255,255,255,.82); line-height: 1.45; }
+  li svg { flex: 0 0 15px; margin-top: 3px; color: #34d399; }
+
+  .buy { margin-top: 20px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .price { font-size: 33px; font-weight: 800; letter-spacing: -.02em; }
+  .price small { font-size: 13px; font-weight: 700; color: rgba(255,255,255,.42); margin-left: 6px; }
+  a.btn {
+    flex: 1; min-width: 172px; text-align: center; text-decoration: none;
+    padding: 15px 22px; border-radius: 13px; font-size: 16px; font-weight: 800;
+    background: #34d399; color: #04120c; transition: background .18s, transform .18s;
+  }
+  a.btn:hover { background: #6ee7b7; transform: translateY(-1px); }
+  a.btn.alt { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.22); }
+  a.btn.alt:hover { background: rgba(255,255,255,.07); }
+
+  .trust {
+    margin-top: 34px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+  }
+  .trust span {
+    font-size: 12.5px; font-weight: 700; color: rgba(255,255,255,.6);
+    border: 1px solid rgba(255,255,255,.11); border-radius: 999px; padding: 9px 16px;
+  }
+  .foot { margin-top: 26px; text-align: center; font-size: 12.5px; color: rgba(255,255,255,.32); }
+  .foot a { color: rgba(255,255,255,.55); }
+
+  /* forwarding state: only shown while sending a known product to Square */
+  #go { display: none; min-height: 100vh; align-items: center; justify-content: center; text-align: center; }
+  #go .spin {
+    width: 32px; height: 32px; margin: 0 auto 22px;
+    border: 3px solid rgba(255,255,255,.14); border-top-color: #34d399;
     border-radius: 50%; animation: sp .8s linear infinite;
   }
   @keyframes sp { to { transform: rotate(360deg); } }
-  .opts { margin-top: 30px; display: flex; flex-direction: column; gap: 10px; }
-  a.btn {
-    display: block; padding: 15px 20px; border-radius: 12px;
-    background: #34d399; color: #04120c; font-weight: 800; font-size: 16px;
-    text-decoration: none;
-  }
-  a.btn.alt { background: transparent; border: 1px solid rgba(255,255,255,.18); color: #fff; }
-  .foot { margin-top: 26px; font-size: 13px; color: rgba(255,255,255,.35); }
-  .foot a { color: rgba(255,255,255,.6); }
 </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="spin" id="spin"></div>
-    <h1 id="head">Taking you to checkout…</h1>
-    <p id="sub">Secure payment is handled by Square.</p>
 
-    <!-- Real links, always in the HTML: they are the no-JS path AND what an
-         automated reviewer sees if it does not execute script. -->
-    <div class="opts" id="opts" hidden>
-      <a class="btn" href="https://square.link/u/kK3Ed9nH">OTX Smartwatch — $75</a>
-      <a class="btn alt" href="https://square.link/u/T75PfvMi">OTX Football — $100</a>
-      <a class="btn alt" href="https://square.link/u/s804ij6C">Golf Grip Trainer</a>
+<div id="go">
+  <div>
+    <div class="spin"></div>
+    <div style="font-size:19px;font-weight:800">Taking you to secure checkout…</div>
+    <div style="margin-top:9px;font-size:14px;color:rgba(255,255,255,.45)">Payment handled by Square.</div>
+  </div>
+</div>
+
+<div class="wrap" id="shop">
+  <header>
+    <div class="brand">Overtime Analytix</div>
+    <h1>Real sensors.<br>Real numbers.</h1>
+    <p class="sub">
+      Sports equipment that measures what you actually did — and tells you what it means.
+      Bought once. No subscription, ever.
+    </p>
+  </header>
+
+  <div class="cards">
+
+    <div class="card feature">
+      <div class="shot">
+        <img src="/screenshots/otx-hero-live.png" alt="OTX smartwatch" loading="lazy">
+      </div>
+      <div class="body">
+        <span class="tag">Most popular</span>
+        <h2>OTX Smartwatch</h2>
+        <p class="blurb">
+          A golf swing analyzer, a running coach and a full AI assistant — all on your wrist,
+          all working without your phone.
+        </p>
+        <ul>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span><b>SwingIQ</b> — club speed, attack angle, tempo and consistency, graded against the pros</span></li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span><b>Otis</b> — ask it anything by voice or typing; it reads your session and answers on the watch</span></li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span>Running, daily activity, sleep scoring, yoga &amp; Pilates</span></li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span>No phone. No app. Nothing clipped to your gear.</span></li>
+        </ul>
+        <div class="buy">
+          <div class="price">$75<small>one time</small></div>
+          <a class="btn" href="https://square.link/u/kK3Ed9nH">Buy the OTX Smartwatch</a>
+        </div>
+      </div>
     </div>
 
-    <p class="foot">
-      Trouble checking out? <a href="https://overtimeanalytix.com/contact">Contact us</a>
-    </p>
+    <div class="card">
+      <div class="shot"><img src="/screenshots/football-hero.png" alt="OTX Football" loading="lazy"></div>
+      <h2>OTX Football</h2>
+      <p class="blurb">
+        An airless football with a sealed motion engine inside. Throw it, and your numbers
+        appear on the ball itself.
+      </p>
+      <ul>
+        <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span>Speed, spin, spiral quality, distance and hang time</span></li>
+        <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span>Built-in display — no app, no pairing</span></li>
+        <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span>Airless: no pump, no leaks, never goes flat</span></li>
+      </ul>
+      <div class="buy">
+        <div class="price">$100</div>
+        <a class="btn alt" href="https://square.link/u/T75PfvMi">Buy the Football</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="shot"><img src="/screenshots/grip-trainer.png" alt="Golf Grip Trainer" loading="lazy"></div>
+      <h2>Golf Grip Trainer</h2>
+      <p class="blurb">
+        Most slices start in the hands. This locks yours into the neutral tour grip until
+        it stops feeling strange.
+      </p>
+      <ul>
+        <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span>Fixes a slice at the source, not the symptom</span></li>
+        <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span>Fits any club, works on the range or at home</span></li>
+        <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span>The cheapest fix in your bag</span></li>
+      </ul>
+      <div class="buy">
+        <div class="price">$15</div>
+        <a class="btn alt" href="https://square.link/u/s804ij6C">Buy the Grip Trainer</a>
+      </div>
+    </div>
+
   </div>
+
+  <div class="trust">
+    <span>No subscription, ever</span>
+    <span>Secure checkout by Square</span>
+    <span>30-day replacement warranty</span>
+    <span>Designed &amp; built in the USA</span>
+  </div>
+
+  <p class="foot">
+    Questions before you buy? <a href="https://overtimeanalytix.com/contact">Talk to the person who builds them</a>
+    &nbsp;·&nbsp; <a href="https://overtimeanalytix.com/swingiq">See the full OTX page</a>
+  </p>
+</div>
 
 <script>
 (function () {
   // catalog retailer_id -> Square hosted checkout
   var LINKS = {
-    "OTX-001":    "https://square.link/u/kK3Ed9nH",   // OTX smartwatch, $75
-    "OTX-V1":     "https://square.link/u/kK3Ed9nH",   // mpn, in case the feed uses it
-    "GRIP-001":   "https://square.link/u/s804ij6C",   // golf grip trainer
-    "OTX-GRIP-V1":"https://square.link/u/s804ij6C",
-    "OTX-FB-001": "https://square.link/u/T75PfvMi",   // OTX Football, $100
-    "OTX-FB-V1":  "https://square.link/u/T75PfvMi"
+    "OTX-001":     "https://square.link/u/kK3Ed9nH",   // OTX smartwatch, $75
+    "OTX-V1":      "https://square.link/u/kK3Ed9nH",
+    "GRIP-001":    "https://square.link/u/s804ij6C",   // grip trainer, $15
+    "OTX-GRIP-V1": "https://square.link/u/s804ij6C",
+    "OTX-FB-001":  "https://square.link/u/T75PfvMi",   // OTX Football, $100
+    "OTX-FB-V1":   "https://square.link/u/T75PfvMi"
   };
-  var DEFAULT = "https://square.link/u/kK3Ed9nH";
 
   function param(name) {
     var m = new RegExp("[?&]" + name + "=([^&]*)").exec(window.location.search);
     return m ? decodeURIComponent(m[1].replace(/\+/g, " ")) : "";
   }
 
-  // Meta sends "id:quantity" and may comma-separate multiple items. Only the
-  // first is used: Square payment links are one product each.
+  // Meta sends "id:quantity", possibly comma-separated. Only the first is used:
+  // Square payment links are one product each.
   var raw = param("products") || param("product") || param("id");
-  var id  = raw.split(",")[0].split(":")[0].trim();
-  // strip token wrappers Meta or a test harness might leave unsubstituted
+  var id = raw.split(",")[0].split(":")[0].trim();
   id = id.replace(/^[{\[<(]+|[}\]>)]+$/g, "").trim();
+  // an unsubstituted token is not a product; fall through to the shop
   if (/^(abcd|efg|product_?id|retailer_?id|test|example|sample)$/i.test(id)) id = "";
 
   var dest = null;
   if (id) {
-    var keys = Object.keys(LINKS);
-    for (var i = 0; i < keys.length; i++) {
+    var keys = Object.keys(LINKS), i;
+    for (i = 0; i < keys.length; i++) {
       if (keys[i].toLowerCase() === id.toLowerCase()) { dest = LINKS[keys[i]]; break; }
     }
     if (!dest) {
-      // Tolerate prefixed/suffixed feed ids, LONGEST key first: "OTX-FB-001"
-      // must not be matched by the shorter "OTX-001" and bill football at the
-      // watch price. Charging the wrong amount is the one failure that cannot
-      // be walked back, so specificity wins.
+      // longest key first: "OTX-FB-001" must not be caught by the shorter
+      // "OTX-001" and bill a football at the watch price
       var byLen = keys.slice().sort(function (a, b) { return b.length - a.length; });
-      for (var j = 0; j < byLen.length; j++) {
-        if (id.toLowerCase().indexOf(byLen[j].toLowerCase()) !== -1) { dest = LINKS[byLen[j]]; break; }
+      for (i = 0; i < byLen.length; i++) {
+        if (id.toLowerCase().indexOf(byLen[i].toLowerCase()) !== -1) { dest = LINKS[byLen[i]]; break; }
       }
     }
   }
 
-  // A known product, or no product at all (someone hitting /checkout bare, or
-  // Meta probing the template) both go to the single live checkout. Only an
-  // id we recognise as NOT purchasable stops and asks.
-  if (!dest && !id) dest = DEFAULT;
-
   if (dest) {
-    // replace() so the back button returns to the shop, not this redirector
-    window.location.replace(dest);
-  } else {
-    document.getElementById("spin").hidden = true;
-    document.getElementById("head").textContent = "Choose your product";
-    document.getElementById("sub").textContent =
-      "Pick what you are buying and we will take you straight to secure checkout.";
-    document.getElementById("opts").hidden = false;
+    // they already chose - do not make them choose again
+    document.getElementById("shop").style.display = "none";
+    document.getElementById("go").style.display = "flex";
+    window.location.replace(dest);          // replace() so back returns to the shop
   }
+  // otherwise the shop is already rendered: nothing to do
 })();
 </script>
 </body>

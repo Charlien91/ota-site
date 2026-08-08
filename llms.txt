@@ -1,13 +1,13 @@
 # Overtime Analytix
 
 > Overtime Analytix builds sensor-instrumented sports equipment: the OTX Football,
-> a 3D-printed airless football that measures every throw from inside the ball, and
+> an airless football that measures every throw from inside the ball, and
 > SwingIQ, a wrist swing analyzer for golf, baseball and tennis. Hardware and
 > firmware are designed and assembled in the USA by an independent engineer.
 
 ## Products
 
-- [OTX Football](https://overtimeanalytix.com/football/): 3D-printed airless football with an
+- [OTX Football](https://overtimeanalytix.com/football/): airless football with an
   onboard IMU. Measures spiral quality, spin rate, hang time, release speed, launch angle and
   estimated distance per throw, shown on a screen in the ball — no phone or app required.
   Sold as a pre-certification engineering prototype; see the prototype notice on the page.
@@ -21,7 +21,7 @@
 
 ## Guides
 
-- [Airless 3D-printed footballs explained](https://overtimeanalytix.com/blog/airless-football/)
+- [Airless footballs explained](https://overtimeanalytix.com/blog/airless-football/)
 - [How to fix a golf slice permanently](https://overtimeanalytix.com/blog/how-to-fix-a-golf-slice/)
 - [Proper golf grip guide](https://overtimeanalytix.com/blog/proper-golf-grip-guide/)
 - [Best golf training aids, tested](https://overtimeanalytix.com/blog/best-golf-training-aids/)
