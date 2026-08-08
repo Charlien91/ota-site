@@ -93,6 +93,9 @@
   // first is used: Square payment links are one product each.
   var raw = param("products") || param("product") || param("id");
   var id  = raw.split(",")[0].split(":")[0].trim();
+  // strip token wrappers Meta or a test harness might leave unsubstituted
+  id = id.replace(/^[{\[<(]+|[}\]>)]+$/g, "").trim();
+  if (/^(abcd|efg|product_?id|retailer_?id|test|example|sample)$/i.test(id)) id = "";
 
   var dest = null;
   if (id) {
@@ -124,7 +127,7 @@
     document.getElementById("spin").hidden = true;
     document.getElementById("head").textContent = "Choose your product";
     document.getElementById("sub").textContent =
-      "That item is not available for purchase yet. These are ready to ship:";
+      "Pick what you are buying and we will take you straight to secure checkout.";
     document.getElementById("opts").hidden = false;
   }
 })();
